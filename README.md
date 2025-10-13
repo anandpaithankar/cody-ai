@@ -21,7 +21,7 @@ This package includes:
 ### Personalized Interview Feedback
 * Provides a overall rating and ratings for each criteria.
 * **Reset Interview** will allow you to reset the discussion context, chat or choose a different problem to work on.
-* 
+
 <img width="1685" height="1038" alt="image" src="https://github.com/user-attachments/assets/fcebfffc-13af-4822-ba80-b87601ab741c" />
 
 
