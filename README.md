@@ -7,6 +7,16 @@ This package includes:
 - React + Vite frontend (`client/`) with Monaco editor and chat UI
 - Tailwind CSS setup for styling
 
+### Interview
+
+* Choose any Leetcode problem by providing a problem ID or a Leetcode URL in the input box and press "Load" to begin the interview.
+* After the conversation, write the code and use "Evaluate Code" button to get the code evaluation and related discussions.
+* Use "End Interview" to end the interview session to get a Personalized Feedback.
+* By pressing "New Interview" will begin new interview.
+* Cody may stop the interview session if the conversation does not go anywhere or becomes irrelevant or offensive. 
+
+"Reset Interview" will allow you to reset the discussion context, chat or choose a different problem to work on. 
+
 <img width="1685" height="1038" alt="image" src="https://github.com/user-attachments/assets/c109dbd1-70eb-44fb-a638-eda2165cb844" />
 
 ### Personalized Interview Feedback
