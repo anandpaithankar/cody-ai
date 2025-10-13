@@ -12,7 +12,7 @@ This package includes:
 * Choose any Leetcode problem by providing a problem ID or a Leetcode URL in the input box and press **Load** to begin the interview.
 * After the conversation, write the code and use **Evaluate Code** button to get the code evaluation and related discussions.
 * Use **End Interview** to end the interview session to get a Personalized Feedback.
-* By pressing **New Interview** will begin new interview.
+* **Reset Interview** will allow you to reset the discussion context, chat or choose a different problem to work on.
 * Cody may stop the interview session if the conversation does not go anywhere or becomes irrelevant or offensive. 
 
 
@@ -20,7 +20,8 @@ This package includes:
 
 ### Personalized Interview Feedback
 * Provides a overall rating and ratings for each criteria.
-* **Reset Interview** will allow you to reset the discussion context, chat or choose a different problem to work on.
+* By pressing **New Interview** will begin new interview.
+
 
 <img width="1685" height="1038" alt="image" src="https://github.com/user-attachments/assets/fcebfffc-13af-4822-ba80-b87601ab741c" />
 
