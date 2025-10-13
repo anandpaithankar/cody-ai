@@ -67,11 +67,11 @@ Frontend (Vite) runs on http://localhost:5173
 
 ## Troubleshooting
 
-**Ollama Errors:** Ensure ollama serve runs; check ollama ps for model. Timeout? Increase timeout=120 in main.py.
-**CORS Issues:** Backend allows * origins—fine for local.
-**LeetCode Fetch Fails:** Unofficial API (leetcode-api-pied.vercel.app)—if down, fallback to manual problem paste.
-**Frontend Build: Prod:** npm run build (outputs to dist/), serve with npx serve -s dist.
-**Windows Paths:** Use `.\.venv\Scripts\activate` for `venv`.
+* **Ollama Errors:** Ensure ollama serve runs; check ollama ps for model. Timeout? Increase timeout=120 in main.py.
+* **CORS Issues:** Backend allows * origins—fine for local.
+* **LeetCode Fetch Fails:** Unofficial API (leetcode-api-pied.vercel.app)—if down, fallback to manual problem paste.
+* **Frontend Build: Prod:** npm run build (outputs to dist/), serve with npx serve -s dist.
+* **Windows Paths:** Use `.\.venv\Scripts\activate` for `venv`.
 
 ## License
 MIT—free to use/modify/share.
