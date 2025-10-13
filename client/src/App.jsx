@@ -256,7 +256,7 @@ export default function App() {
     return (
       <div className="h-screen flex flex-col bg-gray-50 text-gray-900">
         <header className="flex items-center justify-between px-6 py-4 bg-white shadow">
-          <h1 className="text-3xl font-bold">🧑‍💻 Cody.AI - Interview Feedback</h1>
+          <h1 className="text-3xl font-bold">🧑‍💻 Cody : AI Tech Interview Feedback</h1>
           <div className="flex items-center gap-4">
             <button onClick={() => { setScreen('interview'); resetInterview(); }} className="bg-blue-600 text-white px-4 py-1 rounded">New Interview</button>
           </div>
