@@ -9,6 +9,9 @@ This package includes:
 
 <img width="1685" height="1038" alt="image" src="https://github.com/user-attachments/assets/c109dbd1-70eb-44fb-a638-eda2165cb844" />
 
+### Personalized Interview Feedback
+<img width="1685" height="1038" alt="image" src="https://github.com/user-attachments/assets/fcebfffc-13af-4822-ba80-b87601ab741c" />
+
 
 ## Requirements
 - Node 18+, npm
