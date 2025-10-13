@@ -7,6 +7,9 @@ This package includes:
 - React + Vite frontend (`client/`) with Monaco editor and chat UI
 - Tailwind CSS setup for styling
 
+<img width="1685" height="1038" alt="image" src="https://github.com/user-attachments/assets/c109dbd1-70eb-44fb-a638-eda2165cb844" />
+
+
 ## Requirements
 - Node 18+, npm
 - Python 3.10+, pip
