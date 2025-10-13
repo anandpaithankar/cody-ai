@@ -1,5 +1,5 @@
 
-# Cody.AI Your Friendly Tech Interviewer
+# Cody : AI Tech Interviewer
 
 Local web app (frontend + backend) that uses Ollama to act as an AI interviewer for LeetCode-style problems.
 This package includes:
