@@ -3,7 +3,7 @@
 
 Local web app (frontend + backend) that uses Ollama to act as an AI interviewer for LeetCode-style problems.
 This package includes:
-- FastAPI backend (`server/`) with endpoints: /ask, /problem
+- FastAPI backend (`server/`) with endpoints: `/ask`, `/problem`, `/summerize`
 - React + Vite frontend (`client/`) with Monaco editor and chat UI
 - Tailwind CSS setup for styling
 
