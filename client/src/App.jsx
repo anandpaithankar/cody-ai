@@ -23,13 +23,25 @@ export default function App() {
     return tempDiv.textContent || tempDiv.innerText || '';
   };
 
-  // Function to detect end-of-interview cues in AI responses
   const detectEndOfInterview = (response) => {
-    // Regex to match "end of interview", "goodbye", "session concluded",
-    // "time to end the session", or "time to wrap up" (case-insensitive)
-    const endPhrasesRegex = /(end\s+of\s+interview|bye\s+|goodbye|reached\s+conclusion\s+|session\s+concluded|time\s+to\s+end\s+the\s+session|time\s+to\s+wrap\s+up)/i;
+    // Regex to match various end-of-interview cues,
+    // allowing for optional trailing punctuation or whitespace.
+    const endPhrasesRegex = new RegExp(
+      '\\b(' + // Start of non-capturing group for OR logic
+      'end\\s+of\\s+interview|' +
+      'goodbye|' +
+      'session\\s+ended|' +
+      'bye|' +
+      'reached\\s+conclusion|' +
+      'session\\s+concluded|' +
+      'time\\s+to\\s+end\\s+the\\s+session|' +
+      'time\\s+to\\s+wrap\\s+up' +
+      ')\\b\\W*', // End of group, followed by word boundary and optional non-word characters
+      'i' // Case-insensitive flag
+    );
     return endPhrasesRegex.test(response);
   };
+
 
 
   // Start timer only when problem is loaded
