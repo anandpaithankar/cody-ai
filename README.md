@@ -44,6 +44,8 @@ cd cody-ai
 ollama serve  # Runs on http://localhost:11434
 ollama pull llama3  # Or your preferred model
 ```
+Or you can download Ollama app for running multiple LLMs. Check https://ollama.com for more.
+
 3. Backend setup
 ```bash
 cd server
