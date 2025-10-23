@@ -15,6 +15,7 @@ export default function App() {
   const [feedback, setFeedback] = useState(''); // For end-screen content
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false); // For spinner
   const [isTyping, setIsTyping] = useState(false); // For chat indicator
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false); // Show language selector at start
   const chatRef = useRef(null); // Ref for chat container
 
   const stripHtml = (html) => {
@@ -78,10 +79,25 @@ export default function App() {
 
   async function loadProblem(msg = problemInput) {
     if (!msg.trim()) return;
-    setChat([]); // Clear chat on new problem
-    setProblemInput(msg); // Sync UI input field
-    // Reset editor to lang-specific blank
-    switch (language) {
+
+    // Show language selector if this is the first problem load
+    if (chat.length === 0 && !problem) {
+      setProblemInput(msg); // Store the problem input for later
+      setShowLanguageSelector(true);
+      return;
+    }
+
+    // Use direct loading function
+    await loadProblemDirectly(msg);
+  }
+
+  // Function to start interview with selected language
+  async function startInterviewWithLanguage(selectedLang) {
+    setLanguage(selectedLang);
+    setShowLanguageSelector(false);
+
+    // Update code template based on language
+    switch (selectedLang) {
       case "python":
         setCode("# Write your solution here\ndef solution():\n    pass\n    return");
         break;
@@ -95,6 +111,19 @@ export default function App() {
         setCode("// Write your solution here");
         break;
     }
+
+    // If there's a problem input, load it; otherwise just return to interview screen
+    if (problemInput.trim()) {
+      await loadProblemDirectly(problemInput, selectedLang);
+    }
+    // Language is set, user can now enter a problem and start interview
+  }
+
+  // Direct problem loading function (bypasses language selector check)
+  async function loadProblemDirectly(msg, selectedLang = language) {
+    setChat([]); // Clear chat on new problem
+    setProblemInput(msg); // Sync UI input field
+
     try {
       const res = await fetch('http://localhost:8000/problem', {
         method: 'POST',
@@ -110,10 +139,12 @@ export default function App() {
       setProblem(p);
       setTimeLeft(45 * 60); // Start timer only after successful load
       console.log('Loaded problem description:', stripHtml(p.description)); // Debug log
-      // Auto-start interview with greeting
-      const greeting = "Hello Cody! I'm ready to start the interview.";
+
+      // Set language on server and start interview using the selected language
+      await setServerLanguage(selectedLang);
+      const greeting = `Hello Cody! I'm ready to start the interview. I'll be coding in ${getLanguageDisplayName(selectedLang)}.`;
       setInput(greeting)
-      await sendMessage(greeting); // Send the greeting prompt and reset session.
+      await sendMessageWithLanguage(greeting, selectedLang); // Send the greeting prompt with explicit language
       setInput(""); // Clear input after sending
       if (screen === 'feedback') {
         setScreen('interview'); // Force back to interview
@@ -123,7 +154,7 @@ export default function App() {
     }
   }
 
-  async function sendMessage(msg = input) {
+  async function sendMessage(msg = input, includeLanguage = true) {
     console.log('Sending message start:', msg); // Debug: Log user message
     if (!msg.trim()) return;
     const userMsg = { role: 'user', content: msg };
@@ -132,10 +163,15 @@ export default function App() {
     setIsTyping(true); // Show indicator
     try {
       console.log('Sending message to server:', msg); // Debug: Log user message
+      const payload = { message: msg };
+      if (includeLanguage) {
+        payload.language = getLanguageDisplayName(language);
+      }
+
       const res = await fetch('http://localhost:8000/ask', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: msg })
+        body: JSON.stringify(payload)
       });
       const j = await res.json();
       const ai = j.response || j.error || 'No response';
@@ -151,16 +187,76 @@ export default function App() {
     }
   }
 
+  // Helper function to send message with explicit language
+  async function sendMessageWithLanguage(msg, explicitLanguage) {
+    console.log('Sending message with explicit language:', msg, explicitLanguage); // Debug
+    if (!msg.trim()) return;
+    const userMsg = { role: 'user', content: msg };
+    setChat(prev => [...prev, userMsg]);
+    setIsTyping(true); // Show indicator
+    try {
+      const payload = {
+        message: msg,
+        language: getLanguageDisplayName(explicitLanguage)
+      };
+
+      const res = await fetch('http://localhost:8000/ask', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const j = await res.json();
+      const ai = j.response || j.error || 'No response';
+      setChat(prev => [...prev, { role: 'assistant', content: ai }]);
+      // Check for end trigger
+      if (detectEndOfInterview(ai)) {
+        setTimeout(() => completeInterview(), 1000); // Brief pause for read, then auto-end
+      }
+    } catch (e) {
+      setChat(prev => [...prev, { role: 'assistant', content: 'Server unreachable' }]);
+    } finally {
+      setIsTyping(false); // Hide indicator
+    }
+  }
+
+  // Helper function to get display name for language
+  const getLanguageDisplayName = (lang) => {
+    const languageMap = {
+      "javascript": "JavaScript",
+      "python": "Python",
+      "go": "Go",
+      "cpp": "C++"
+    };
+    return languageMap[lang] || lang;
+  }
+
+  // Function to set language on server
+  async function setServerLanguage(newLanguage) {
+    try {
+      await fetch('http://localhost:8000/set-language', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ language: getLanguageDisplayName(newLanguage) })
+      });
+      console.log('Set server language to:', getLanguageDisplayName(newLanguage)); // Debug
+    } catch (e) {
+      console.error('Failed to set language on server:', e);
+    }
+  }
+
   async function evaluateCode() {
     if (!code.trim() || !problem) return;
-    const evalMessage = `Language: ${language}\nPlease evaluate my code for ${problem.title}:\n\n${code}`;
+    const evalMessage = `Please evaluate my ${getLanguageDisplayName(language)} code for ${problem.title}:\n\n\`\`\`${language}\n${code}\n\`\`\``;
     setChat(prev => [...prev, { role: 'assistant', content: 'Submitted for evaluation... Please wait...' }]); // Notify user
     setIsTyping(true); // Show indicator
     try {
       const res = await fetch('http://localhost:8000/ask', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ message: evalMessage })
+        body: JSON.stringify({
+          message: evalMessage,
+          language: getLanguageDisplayName(language)
+        })
       });
       const j = await res.json();
       const ai = j.response || j.error || 'No evaluation response received.';
@@ -212,7 +308,7 @@ export default function App() {
 
   // Function to reset interview state
   const resetInterview = () => {
-    sendMessage("stop session and clear the memory"); // Inform backend to reset session
+    sendMessage("stop session and clear the memory", false); // Inform backend to reset session
     setChat([]);
     setProblem(null);
     setProblemInput("");
@@ -221,6 +317,7 @@ export default function App() {
     setFeedback("");
     setIsLoadingFeedback(false);
     setIsTyping(false);
+    setShowLanguageSelector(false);
     // Reset code based on current language
     switch (language) {
       case "python":
@@ -336,6 +433,81 @@ export default function App() {
     );
   }
 
+  // Language selector modal
+  if (showLanguageSelector) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+          <h2 className="text-2xl font-bold text-center mb-6">Select Your Preferred Programming Language</h2>
+          <p className="text-gray-600 text-center mb-6">Choose the language you'd like to use for this coding interview. You can change it later if needed.</p>
+
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              {
+                value: 'javascript',
+                label: 'JavaScript',
+                icon: (
+                  <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center text-black font-bold text-lg">
+                    JS
+                  </div>
+                ),
+                color: 'hover:border-yellow-500 hover:bg-yellow-50'
+              },
+              {
+                value: 'python',
+                label: 'Python',
+                icon: (
+                  <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                    PY
+                  </div>
+                ),
+                color: 'hover:border-blue-500 hover:bg-blue-50'
+              },
+              {
+                value: 'go',
+                label: 'Go',
+                icon: (
+                  <div className="w-12 h-12 bg-cyan-400 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                    GO
+                  </div>
+                ),
+                color: 'hover:border-cyan-500 hover:bg-cyan-50'
+              },
+              {
+                value: 'cpp',
+                label: 'C++',
+                icon: (
+                  <div className="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                    C++
+                  </div>
+                ),
+                color: 'hover:border-purple-500 hover:bg-purple-50'
+              }
+            ].map((lang) => (
+              <button
+                key={lang.value}
+                onClick={() => startInterviewWithLanguage(lang.value)}
+                className={`flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg ${lang.color} transition-all`}
+              >
+                <div className="mb-3">{lang.icon}</div>
+                <span className="font-semibold">{lang.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => startInterviewWithLanguage('javascript')}
+              className="text-gray-500 hover:text-gray-700 text-sm"
+            >
+              Skip for now (default: JavaScript)
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Interview screen
   return (
     <div className="h-screen flex flex-col bg-gray-50 text-gray-900">
@@ -416,7 +588,7 @@ export default function App() {
                       <div className="flex items-center space-x-1">
                         <div className="animate-bounce">🧠</div>
                         <span>Thinking...</span>
-                        
+
                       </div>
                     </div> */}
                   </div>
@@ -455,9 +627,19 @@ export default function App() {
             </div>
             <select
               value={language}
-              onChange={(e) => {
+              onChange={async (e) => {
                 const newLang = e.target.value;
                 setLanguage(newLang);
+
+                // Update server with new language
+                await setServerLanguage(newLang);
+
+                // Notify in chat if interview is active
+                if (chat.length > 0) {
+                  const langChangeMsg = `I've switched to ${getLanguageDisplayName(newLang)}. Please continue the interview in this language.`;
+                  await sendMessage(langChangeMsg);
+                }
+
                 switch (newLang) {
                   case "python":
                     setCode("# Write your solution here\ndef solution():\n    pass\n    return");
