@@ -6,7 +6,7 @@ RUN pip install -r requirements.txt
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 # Frontend
-FROM node:18 AS frontend
+FROM node:22 AS frontend
 WORKDIR /app/client
 COPY client/ .
 RUN npm ci && npm run build
